@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.ChannelDao">
+
+    <resultMap id="channelRM" type="ChannelEntity">
+        <id property="id" column="_id" />
+        <result property="ver.cchVerId" column="ver.cchVerId" />
+        <result property="ver._cchId" column="ver._cchId" />
+        <result property="ver.cchVerName" column="ver.cchVerName" />
+        <result property="ver.cchVerUpDate" column="ver.cchVerUpDate" />
+        <result property="ver.cchVerUpStatus" column="ver.cchVerUpStatus" />
+        <result property="ver.cchVerUpDesc" column="ver.cchVerUpDesc" />
+        <result property="ver.isNew" column="ver.isNew" />
+        <result property="ver.status" column="ver.status" />
+        <result property="ver.cchVerUpFDate" column="ver.cchVerUpFDate" />
+        <result property="ver.cchVerUpDataPath" column="ver.cchVerUpDataPath" />
+    </resultMap>
+
+    <sql id="columnName">
+        a._id,
+        a.cchId,
+        a.cchName,
+        a.cchShortName,
+        a.cchAllParam,
+        a.cchRequireParam,
+        a.cchSplash,
+        a.cchSubscript,
+        a.cchCreateDate,
+        a.status,
+        a.cchWeight,
+        ver.cchVerId as 'ver.cchVerId',
+        ver._cchId as 'ver._cchId',
+        ver.cchVerName as 'ver.cchVerName',
+        ver.cchVerUpDate as 'ver.cchVerUpDate',
+        ver.cchVerUpStatus as 'ver.cchVerUpStatus',
+        ver.cchVerUpDesc as 'ver.cchVerUpDesc',
+        ver.isNew as 'ver.isNew',
+        ver.status as 'ver.status',
+        ver.cchVerUpFDate as 'ver.cchVerUpFDate',
+        ver.cchVerUpDataPath as 'ver.cchVerUpDataPath'
+    </sql>
+
+    <sql id="baseColumnName">
+        _id,
+        cchId,
+        cchName,
+        cchShortName,
+        cchAllParam,
+        cchRequireParam,
+        cchSplash,
+        cchSubscript,
+        cchCreateDate,
+        cchWeight,
+        status
+    </sql>
+
+    <!-- 获取渠道列表 -->
+    <select id="findAllList" resultMap="channelRM">
+        SELECT
+            <include refid="columnName" />
+        FROM tbl_channel AS a, tbl_channel_version AS ver
+        WHERE a._id = ver._cchId
+        AND ver.isNew = 1
+        ORDER BY a.cchId ASC
+    </select>
+
+    <!-- 获取对应渠道 -->
+    <select id="get" resultMap="channelRM">
+        SELECT
+          <include refid="baseColumnName" />
+        FROM tbl_channel
+        WHERE _id = #{id};
+    </select>
+
+    <!-- 通过渠道id获取对应渠道 -->
+    <select id="getByCchId" resultMap="channelRM">
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_channel
+        WHERE cchId = #{id};
+    </select>
+
+    <!-- 插入渠道 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+            tbl_channel(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{cchId},
+        #{cchName},
+        #{cchShortName},
+        #{cchAllParam},
+        #{cchRequireParam},
+        #{cchSplash},
+        #{cchSubscript},
+        #{cchCreateDate},
+        #{cchWeight},
+        1
+        );
+    </insert>
+
+    <!-- 更新渠道信息 -->
+    <update id="update">
+        UPDATE
+            tbl_channel
+        SET
+            cchName = #{cchName},
+            cchShortName = #{cchShortName},
+            cchAllParam = #{cchAllParam},
+            cchRequireParam = #{cchRequireParam},
+            cchSplash = #{cchSplash},
+            cchSubscript = #{cchSubscript},
+            cchWeight = #{cchWeight}
+        WHERE
+            _id = #{id}
+    </update>
+
+    <!-- 删除渠道信息 -->
+    <update id="delete">
+        UPDATE
+            tbl_channel
+        SET
+            status = 0
+        WHERE
+            _id = #{id}
+    </update>
+
+    <!-- 渠道管理分页查询 -->
+    <select id="findListByPage" resultMap="channelRM">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_channel AS a, tbl_channel_version AS ver
+        WHERE a.status = #{FLAG_STATUS_ACTIVE}
+        AND ver.isNew = #{FLAG_STATUS_ACTIVE}
+        AND a._id = ver._cchId
+        <if test="cchId != null and cchId != ''">
+            AND a.cchId = #{cchId}
+        </if>
+        <if test="cchName != null and cchName != ''">
+            AND a.cchName = #{cchName}
+        </if>
+        <if test="cchShortName != null and cchShortName != ''">
+            AND a.cchShortName = #{cchShortName}
+        </if>
+        <if test="ver != null and ver.cchVerUpStatus != null and ver.cchVerUpStatus != 0">
+            AND ver.cchVerUpStatus = #{ver.cchVerUpStatus}
+        </if>
+        ORDER BY a.cchId ASC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+</mapper>

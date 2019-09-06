@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.GameDao">
+
+    <resultMap id="gameRM" type="GameEntity">
+        <id property="id" column="_id" />
+        <result property="ver.gameVerId" column="ver.gameVerId" />
+        <result property="ver._gameId" column="ver._gameId" />
+        <result property="ver.gameVerNum" column="ver.gameVerNum" />
+        <result property="ver.gameVerName" column="ver.gameVerName" />
+        <result property="ver.gameVerUpDate" column="ver.gameVerUpDate" />
+        <result property="ver.gameVerUpDesc" column="ver.gameVerUpDesc" />
+        <result property="ver.isNew" column="ver.isNew" />
+        <result property="ver.status" column="ver.status" />
+        <result property="ver.gameVerUpFDate" column="ver.gameVerUpFDate" />
+        <result property="ver.gameVerUpCPPath" column="ver.gameVerUpCPPath" />
+        <result property="ver.gameVerUpSJoysPath" column="ver.gameVerUpSJoysPath" />
+        <result property="company.companyId" column="company.companyId" />
+        <result property="company.companyName" column="company.companyName" />
+        <result property="company.companyDesc" column="company.companyDesc" />
+    </resultMap>
+
+    <sql id="columnName">
+        a._id,
+        a.gameId,
+        a.gameName,
+        a.gameShortName,
+        a.gameType,
+        a.gameCreateDate,
+        a.status,
+        b.companyId as 'company.companyId',
+        b.companyName as 'company.companyName',
+        b.companyDesc as 'company.companyDesc',
+        ver.gameVerId as 'ver.gameVerId',
+        ver._gameId as 'ver._gameId',
+        ver.gameVerNum as 'ver.gameVerNum',
+        ver.gameVerName as 'ver.gameVerName',
+        ver.gameVerUpDate as 'ver.gameVerUpDate',
+        ver.gameVerUpDesc as 'ver.gameVerUpDesc',
+        ver.isNew as 'ver.isNew',
+        ver.status as 'ver.status',
+        ver.gameVerUpFDate as 'ver.gameVerUpFDate',
+        ver.gameVerUpCPPath as 'ver.gameVerUpCPPath',
+        ver.gameVerUpSJoysPath as 'ver.gameVerUpSJoysPath'
+    </sql>
+
+    <sql id="baseSelectColumnName">
+        _id AS 'id',
+        gameId,
+        companyId as 'company.companyId',
+        gameName,
+        gameShortName,
+        gameType,
+        gameCreateDate,
+        status
+    </sql>
+
+    <sql id="baseColumnName">
+        _id,
+        gameId,
+        companyId,
+        gameName,
+        gameShortName,
+        gameType,
+        gameCreateDate,
+        status
+    </sql>
+
+    <!-- 获取游戏列表 -->
+    <select id="findAllList" resultMap="gameRM">
+        SELECT
+           <include refid="columnName" />
+        FROM tbl_game AS a, tbl_game_version AS ver, tbl_company AS b
+        WHERE a._id = ver.
+        AND a.companyId = b.companyId
+        AND ver.isNew = 1
+        ORDER BY a.gameId ASC
+    </select>
+
+    <!-- 获取游戏列表带过滤掉不属于此公司的 -->
+    <select id="findAllListWithFilter" parameterType="GameEntity" resultMap="gameRM">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_game AS a, tbl_game_version AS ver, tbl_company AS b
+        WHERE a._id = ver._gameId
+        AND a.companyId = b.companyId
+        AND ver.isNew = 1
+        <if test="company.companyId != -1">
+            AND a.companyId = #{company.companyId}
+        </if>
+        <if test="status != -1">
+            AND a.status = #{status}
+        </if>
+        ORDER BY a.gameId ASC
+    </select>
+
+    <!-- 获取对应标识的游戏 -->
+    <select id="get"  resultType="GameEntity">
+        SELECT
+        <include refid="baseSelectColumnName" />
+        FROM tbl_game
+        WHERE _id = #{id};
+    </select>
+
+    <!-- 通过游戏Id获取对应标识的游戏 -->
+    <select id="getByGameId" resultType="GameEntity">
+        SELECT
+        <include refid="baseSelectColumnName" />
+        FROM tbl_game
+        WHERE gameId = #{id}
+        AND status = 1
+    </select>
+
+    <!-- 通过游戏标识获取对应标识的游戏 -->
+    <select id="getByGameShortName" resultType="GameEntity">
+        SELECT
+        <include refid="baseSelectColumnName" />
+        FROM tbl_game
+        WHERE gameShortName = #{gameShortName}
+        AND status = 1
+    </select>
+
+    <!-- 获取对应标识的带版本的游戏 -->
+    <select id="getWithVer" resultMap="gameRM">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_game AS a, tbl_game_version AS ver, tbl_company AS b
+        WHERE a._id = #{id}
+        AND ver.isNew = 1
+        AND a._id = ver._gameId
+        AND a.companyId = b.companyId
+    </select>
+
+    <!-- 插入游戏  -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO
+        tbl_game(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{gameId},
+        #{company.companyId},
+        #{gameName},
+        #{gameShortName},
+        #{gameType},
+        #{gameCreateDate},
+        1
+        );
+    </insert>
+
+    <!-- 更新游戏信息 -->
+    <update id="update">
+        UPDATE
+            tbl_game
+        SET
+            gameName = #{gameName},
+            gameShortName = #{gameShortName},
+            gameType = #{gameType}
+        WHERE
+            _id = #{id}
+    </update>
+
+    <!-- 删除游戏信息 -->
+    <update id="delete">
+        UPDATE
+            tbl_game
+        SET
+            status = 0
+        WHERE
+            _id = #{id}
+    </update>
+
+    <!-- 游戏管理分页查询 -->
+    <select id="findListByPage" resultMap="gameRM">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_game AS a, tbl_game_version AS ver, tbl_company AS b
+        WHERE a.status = #{FLAG_STATUS_ACTIVE}
+        AND ver.isNew = #{FLAG_STATUS_ACTIVE}
+        AND a._id = ver._gameId
+        AND a.companyId = b.companyId
+        <if test="company.companyId != -1">
+            AND a.companyId = #{company.companyId}
+        </if>
+        <if test="gameId != null and gameId != ''">
+            AND a.gameId = #{gameId}
+        </if>
+        <if test="gameName != null and gameName != ''">
+            AND a.gameName = #{gameName}
+        </if>
+        <if test="gameShortName != null and gameShortName != ''">
+            AND a.gameShortName = #{gameShortName}
+        </if>
+        <if test="gameType != null and gameType != 0">
+            AND a.gameType = #{gameType}
+        </if>
+        ORDER BY a.gameId ASC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+</mapper>

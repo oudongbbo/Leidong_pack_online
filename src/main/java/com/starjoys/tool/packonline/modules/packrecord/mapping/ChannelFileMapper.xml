@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packrecord.dao.ChannelFileDao">
+
+    <sql id="baseColumnName">
+        cchFileId,
+        cchRecordId,
+        gameParamId,
+        cchFileSuccess,
+        cchFileGPRecordData
+    </sql>
+
+    <!-- 插入渠道打包文件记录数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_channel_file(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{cchRecord.cchRecordId},
+        #{gameParam.gameParamId},
+        #{cchFileSuccess},
+        #{cchFileGPRecordData}
+        )
+    </insert>
+
+</mapper>

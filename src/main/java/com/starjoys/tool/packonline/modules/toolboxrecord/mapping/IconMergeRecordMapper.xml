@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.toolboxrecord.dao.IconMergeRecordDao">
+
+    <sql id="columnName">
+        a.icMergeRecordId,
+        game.gameId as 'game.gameId',
+        game.gameName as 'game.gameName',
+        game.gameShortName as 'game.gameShortName',
+        game.gameType as 'game.gameType',
+        cch.cchName as 'cch.cchName',
+        cch.cchShortName as 'cch.cchShortName',
+        us.userId as 'us.userId',
+        us.userName as 'us.userName',
+        a.icMergeRecordDirection,
+        a.icMergeRecordStartDate,
+        a.icMergeRecordEndDate,
+        a.icMergeRecordMsgResult,
+        a.icMergeRecordOutput
+    </sql>
+
+    <sql id="baseColumnName">
+        icMergeRecordId,
+        _gameId,
+        _cchId,
+        userId,
+        icMergeRecordDirection,
+        icMergeRecordStartDate,
+        icMergeRecordEndDate,
+        icMergeRecordMsgResult,
+        icMergeRecordOutput
+    </sql>
+
+    <!-- 获取图标合并记录列表 -->
+    <select id="findAllList" resultType="IconMergeRecordEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        tbl_icon_merge_record AS a
+        LEFT JOIN tbl_game AS game ON a._gameId = game._id
+        INNER JOIN tbl_channel AS cch ON a._cchId = cch._id
+        INNER JOIN tbl_user AS us ON a.userId = us.userId
+    </select>
+
+    <!-- 插入图标合并数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_icon_merge_record(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{game.id},
+        #{cch.id},
+        #{us.userId},
+        #{icMergeRecordDirection},
+        #{icMergeRecordStartDate},
+        #{icMergeRecordEndDate},
+        #{icMergeRecordMsgResult},
+        #{icMergeRecordOutput})
+    </insert>
+
+    <!-- 图标合并记录分页查询 -->
+    <select id="findListByPage" resultType="IconMergeRecordEntity">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM
+        tbl_icon_merge_record AS a
+        LEFT JOIN tbl_game AS game ON a._gameId = game._id
+        INNER JOIN tbl_channel AS cch ON a._cchId = cch._id
+        INNER JOIN tbl_user AS us ON a.userId = us.userId
+        WHERE a.icMergeRecordId != 0
+        <if test="game != null and game.gameId != null and game.gameId != ''">
+            AND game.gameId = #{game.gameId}
+        </if>
+        <if test="game != null and game.gameName != null and game.gameName != ''">
+            AND game.gameName = #{game.gameName}
+        </if>
+        <if test="game != null and game.gameShortName != null and game.gameShortName != ''">
+            AND game.gameShortName = #{game.gameShortName}
+        </if>
+        <if test="cch != null and cch.id != null and cch.id != 0">
+            AND cch._id = #{cch.id}
+        </if>
+        <if test="cch != null and cch.cchShortName != null and cch.cchShortName != ''">
+            AND cch.cchShortName = #{cch.cchShortName}
+        </if>
+        <if test="us != null and us.userId != null and us.userId != 0">
+            AND us.userId = #{us.userId}
+        </if>
+        <if test="sMergeType != null and sMergeType != ''">
+            <if test="sMergeType == 0">
+                AND a._gameId = 0
+            </if>
+            <if test="sMergeType == 1">
+                AND a._gameId != 0
+            </if>
+        </if>
+        ORDER BY a.icMergeRecordStartDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+</mapper>

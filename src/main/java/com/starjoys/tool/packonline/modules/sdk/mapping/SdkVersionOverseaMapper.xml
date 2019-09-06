@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.sdk.dao.SdkVersionOverseaDao">
+
+    <sql id="columnName">
+        sdk.sdkId,
+        sdk.sdkCreateDate,
+        sdk.status,
+        a.sdkVerId AS 'ver.sdkVerId',
+        a.sdkVerName AS 'ver.sdkVerName',
+        a.sdkVerUpDate AS 'ver.sdkVerUpDate',
+        a.sdkVerUpDesc AS 'ver.sdkVerUpDesc',
+        a.sdkVerUpPath AS 'ver.sdkVerUpPath',
+        a.isNew AS 'ver.isNew',
+        a.status AS 'ver.status',
+        us.userId AS 'ver.us.userId',
+        us.username AS 'ver.us.username',
+        cch._id AS 'cch.id',
+        cch.cchId AS 'cch.cchId',
+        cch.cchName AS 'cch.cchName',
+        cch.cchShortName AS 'cch.cchShortName'
+    </sql>
+
+
+    <sql id="baseColumnName">
+        sdkVerId,
+        sdkId,
+        userId,
+        sdkVerName,
+        sdkVerUpDate,
+        sdkVerUpDesc,
+        sdkVerUpPath,
+        isNew,
+        status
+    </sql>
+
+    <!-- 带过滤的查找列表 -->
+    <select id="findList" resultType="SdkEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_sdk_version_oversea AS a, tbl_sdk_oversea AS sdk, tbl_user AS us, tbl_channel AS cch
+        WHERE sdk.sdkId = #{sdkId}
+        AND a.sdkId = sdk.sdkId
+        AND a.userId = us.userId
+        AND sdk._cchId = cch._id
+        ORDER BY
+        a.sdkVerUpDate DESC
+    </select>
+
+    <!-- 获取单条数据 -->
+    <select id="get" resultType="SdkEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_sdk_version_oversea AS a, tbl_sdk_oversea AS sdk, tbl_user AS us, tbl_channel AS cch
+        WHERE a.sdkVerId = #{ver.sdkVerId}
+        AND a.sdkId = sdk.sdkId
+        AND a.userId = us.userId
+        AND sdk._cchId = cch._id
+    </select>
+
+    <!-- 插入数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_sdk_version_oversea(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{sdkId},
+        #{ver.us.userId},
+        #{ver.sdkVerName},
+        #{ver.sdkVerUpDate},
+        #{ver.sdkVerUpDesc},
+        #{ver.sdkVerUpPath},
+        1,
+        1
+        )
+    </insert>
+
+    <!-- 更新是否最新 -->
+    <update id="updateIsNew">
+        UPDATE
+            tbl_sdk_version_oversea
+        SET
+        isNew = #{ver.isNew}
+        WHERE
+        status = 1
+        AND sdkId = #{sdkId}
+    </update>
+
+    <!-- 更新数据 -->
+    <update id="update">
+        UPDATE
+            tbl_sdk_version_oversea
+        SET
+        sdkVerName = #{ver.sdkVerName},
+        sdkVerUpDesc = #{ver.sdkVerUpDesc}
+        WHERE
+        sdkVerId = #{ver.sdkVerId}
+    </update>
+
+
+</mapper>

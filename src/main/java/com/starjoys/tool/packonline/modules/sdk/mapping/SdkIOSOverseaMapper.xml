@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.sdk.dao.SdkIOSOverseaDao">
+
+    <sql id="columnName">
+        a.sdkId,
+        a.sdkName,
+        a.sdkCchId,
+        a.sdkCreateDate,
+        a.status,
+        ver.sdkVerId AS 'ver.sdkVerId',
+        ver.sdkVerName AS 'ver.sdkVerName',
+        ver.sdkVerUpDate AS 'ver.sdkVerUpDate',
+        ver.sdkVerUpDesc AS 'ver.sdkVerUpDesc',
+        ver.sdkVerUpPath AS 'ver.sdkVerUpPath',
+        ver.isNew AS 'ver.isNew',
+        ver.status AS 'ver.status',
+        us.userId AS 'ver.us.userId',
+        us.username AS 'ver.us.username'
+    </sql>
+
+
+    <sql id="baseColumnName">
+        sdkId,
+        sdkName,
+        sdkCchId,
+        sdkCreateDate,
+        status
+    </sql>
+
+    <!-- 查询所有数据 -->
+    <select id="findAllList" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        tbl_sdk_ios_oversea AS a, tbl_sdk_version_ios_oversea AS ver, tbl_user AS us
+        WHERE
+        ver.isNew = 1
+        AND a.sdkId = ver.sdkId
+        AND ver.userId = us.userId
+    </select>
+
+
+    <!-- 分页查询 -->
+    <select id="findListByPage" resultType="SdkIOSEntity">
+        SELECT SQL_CALC_FOUND_ROWS
+            <include refid="columnName" />
+        FROM
+           tbl_sdk_ios_oversea AS a, tbl_sdk_version_ios_oversea AS ver, tbl_user AS us
+        WHERE
+            a.status = #{FLAG_STATUS_ACTIVE}
+            AND ver.isNew = #{FLAG_STATUS_ACTIVE}
+            AND a.sdkId = ver.sdkId
+            AND ver.userId = us.userId
+        <if test="sdkId != null and sdkId != ''">
+            AND a.sdkId = #{sdkId}
+        </if>
+        ORDER BY
+            a.sdkCchId ASC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        SELECT found_rows()
+    </select>
+
+    <!-- 获取单条记录 -->
+    <select id="get" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        tbl_sdk_ios_oversea AS a, tbl_sdk_version_ios_oversea AS ver, tbl_user AS us
+        WHERE
+        ver.isNew = 1
+        AND a.sdkId = #{id}
+        AND a.sdkId = ver.sdkId
+        AND ver.userId = us.userId
+    </select>
+
+    <!-- 通过名称获取 -->
+    <select id="getByName" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_sdk_ios_oversea
+        WHERE status = #{FLAG_STATUS_ACTIVE}
+        AND sdkName = #{sdkName}
+    </select>
+
+    <!-- 通过渠道id获取 -->
+    <select id="getByCchId" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_sdk_ios_oversea
+        WHERE status = #{FLAG_STATUS_ACTIVE}
+        AND sdkCchId = #{sdkCchId}
+    </select>
+
+
+    <!-- 插入数据 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="sdkId">
+        INSERT INTO
+        tbl_sdk_ios_oversea(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{sdkName},
+        #{sdkCchId},
+        #{sdkCreateDate},
+        1
+        )
+    </insert>
+
+    <!-- 更新数据 -->
+    <update id="update">
+        UPDATE
+          tbl_sdk_ios_oversea
+        SET
+          sdkName = #{sdkName},
+          sdkCchId = #{sdkCchId}
+        WHERE
+          sdkId = #{sdkId}
+    </update>
+
+
+</mapper>

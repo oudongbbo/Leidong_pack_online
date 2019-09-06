@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.PackToolDao">
+
+    <sql id="columnName">
+        a.packToolId,
+        a.packToolName,
+        a.packToolFileName,
+        a.packToolCreateDate,
+        a.status,
+        record.ptRecordId AS 'record.ptRecordId',
+        record.ptRecordUpPath AS 'record.ptRecordUpPath',
+        record.ptRecordUpDate AS 'record.ptRecordUpDate',
+        record.ptRecordUpDesc AS 'record.ptRecordUpDesc'
+    </sql>
+
+    <sql id="ANY_VALUE_columnName">
+        ANY_VALUE(a.packToolId)  AS  'a.packToolId',
+        ANY_VALUE(a.packToolName)  AS 'a.packToolName',
+        ANY_VALUE(a.packToolFileName) AS 'a.packToolFileName',
+        ANY_VALUE(a.packToolCreateDate) AS 'a.packToolCreateDate',
+        ANY_VALUE(a.status) AS 'a.status',
+        ANY_VALUE(record.ptRecordId) AS 'record.ptRecordId',
+        ANY_VALUE(record.ptRecordUpPath) AS 'record.ptRecordUpPath',
+        ANY_VALUE(record.ptRecordUpDate) AS 'record.ptRecordUpDate',
+        ANY_VALUE(record.ptRecordUpDesc) AS 'record.ptRecordUpDesc'
+    </sql>
+
+
+    <sql id="baseColumnName">
+        packToolId,
+        packToolName,
+        packToolFileName,
+        packToolCreateDate,
+        status
+    </sql>
+
+
+
+    <!-- 分页查询 -->
+    <select id="findListByPage" resultType="packToolEntity">
+        SELECT SQL_CALC_FOUND_ROWS
+        <include refid="columnName" />
+        FROM
+        (
+        SELECT DISTINCT *
+        FROM
+        tbl_pack_tool_record AS temp
+        ORDER BY
+        temp.ptRecordUpDate DESC
+        ) AS record,
+        tbl_pack_tool AS a
+        WHERE
+        a.STATUS = #{FLAG_STATUS_ACTIVE}
+        AND record.packToolId = a.packToolId
+        GROUP BY
+        a.packToolId
+        ORDER BY
+        record.ptRecordUpDate, a.packToolCreateDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        SELECT found_rows()
+    </select>
+
+    <!-- 获取单条记录 -->
+    <select id="get" resultType="packToolEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        (
+        SELECT DISTINCT *
+        FROM
+        tbl_pack_tool_record AS temp
+        ORDER BY
+        temp.ptRecordUpDate DESC
+        ) AS record,
+        tbl_pack_tool AS a
+        WHERE a.packToolId = #{id}
+        AND a.status = 1
+        AND record.packToolId = a.packToolId
+        GROUP BY a.packToolId
+    </select>
+
+    <!-- 通过名称获取 -->
+    <select id="getByName" resultType="packToolEntity">
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_pack_tool
+        WHERE status = #{FLAG_STATUS_ACTIVE}
+        AND packToolName = #{packToolName}
+    </select>
+
+    <!-- 通过文件名获取 -->
+    <select id="getByFileName" resultType="packToolEntity">
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_pack_tool
+        WHERE status = #{FLAG_STATUS_ACTIVE}
+        AND packToolFileName = #{packToolFileName}
+    </select>
+
+
+    <!-- 插入数据 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="packToolId">
+        INSERT INTO
+        tbl_pack_tool(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{packToolName},
+        #{packToolFileName},
+        #{packToolCreateDate},
+        1
+        )
+    </insert>
+
+    <!-- 更新数据 -->
+    <update id="update">
+        UPDATE
+        tbl_pack_tool
+        SET
+        packToolName = #{packToolName},
+        packToolFileName = #{packToolFileName}
+        WHERE
+        packToolId = #{packToolId}
+    </update>
+
+</mapper>

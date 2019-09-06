@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.ChannelVersionDao">
+
+    <resultMap id="channelVersionRM" type="ChannelEntity">
+        <id property="id" column="_id" />
+        <result property="ver.cchVerId" column="ver.cchVerId" />
+        <result property="ver._cchId" column="ver._cchId" />
+        <result property="ver.cchVerName" column="ver.cchVerName" />
+        <result property="ver.cchVerUpDate" column="ver.cchVerUpDate" />
+        <result property="ver.cchVerUpStatus" column="ver.cchVerUpStatus" />
+        <result property="ver.cchVerUpDesc" column="ver.cchVerUpDesc" />
+        <result property="ver.isNew" column="ver.isNew" />
+        <result property="ver.status" column="ver.status" />
+        <result property="ver.cchVerUpFDate" column="ver.cchVerUpFDate" />
+        <result property="ver.cchVerUpDataPath" column="ver.cchVerUpDataPath" />
+        <result property="ver.user.userId" column="us.userId" />
+        <result property="ver.user.username" column="us.username" />
+    </resultMap>
+
+    <sql id="columnName">
+        a._id,
+        a.cchId,
+        a.cchName,
+        a.cchShortName,
+        a.cchAllParam,
+        a.cchRequireParam,
+        a.cchSplash,
+        a.cchSubscript,
+        a.cchCreateDate,
+        a.cchWeight,
+        a.status,
+        ver.cchVerId as 'ver.cchVerId',
+        ver._cchId as 'ver._cchId',
+        ver.cchVerName as 'ver.cchVerName',
+        ver.cchVerUpDate as 'ver.cchVerUpDate',
+        ver.cchVerUpStatus as 'ver.cchVerUpStatus',
+        ver.cchVerUpDesc as 'ver.cchVerUpDesc',
+        ver.isNew as 'ver.isNew',
+        ver.status as 'ver.status',
+        ver.cchVerUpFDate as 'ver.cchVerUpFDate',
+        ver.cchVerUpDataPath as 'ver.cchVerUpDataPath',
+        us.userId as 'us.userId',
+        us.username as 'us.username'
+    </sql>
+
+    <sql id="baseColumnName">
+        cchVerId,
+        _cchId,
+        cchVerName,
+        cchVerUpDate,
+        cchVerUpStatus,
+        cchVerUpDesc,
+        isNew,
+        status,
+        cchVerUpFDate,
+        cchVerUpDataPath,
+        userId
+    </sql>
+
+    <!-- 获取渠道版本列表 -->
+    <select id="findList" resultMap="channelVersionRM">
+        SELECT
+            <include refid="columnName" />
+        FROM tbl_channel AS a, tbl_channel_version AS ver, tbl_user as us
+        WHERE a._id = #{id}
+        AND a._id = ver._cchId
+        AND ver.userId = us.userId
+        ORDER BY ver.cchVerUpDate DESC
+    </select>
+
+    <!-- 插入渠道版本数据 -->
+    <insert id="insert">
+        INSERT INTO
+            tbl_channel_version(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{id},
+        #{ver.cchVerName},
+        #{ver.cchVerUpDate},
+        #{ver.cchVerUpStatus},
+        #{ver.cchVerUpDesc},
+        1,
+        1,
+        #{ver.cchVerUpFDate},
+        #{ver.cchVerUpDataPath},
+        #{ver.user.userId}
+        )
+    </insert>
+
+    <!-- 更新所有是否新的数据 -->
+    <update id="updateIsNew">
+        UPDATE
+            tbl_channel_version
+        SET
+            isNew = #{ver.isNew}
+        WHERE
+            status = 1
+            AND _cchId = #{id}
+    </update>
+
+    <!-- 更新渠道版本数据 -->
+    <update id="update">
+        UPDATE
+            tbl_channel_version
+        SET
+            cchVerName = #{ver.cchVerName},
+            cchVerUpDesc = #{ver.cchVerUpDesc},
+            cchVerUpStatus = #{ver.cchVerUpStatus}
+        WHERE
+            cchVerId = #{ver.cchVerId}
+    </update>
+
+    <!-- 删除所有对应的渠道版本信息 -->
+    <update id="deleteAll">
+        UPDATE
+            tbl_channel_version
+        SET
+            isNew = 0,
+            status = 0
+        WHERE
+            _cchId = #{id}
+    </update>
+
+    <!-- 删除对应的渠道版本信息 -->
+    <update id="delete">
+        UPDATE
+            tbl_channel_version
+        SET
+            isNew = 0,
+            status = 0
+        WHERE
+            _cchId = #{id}
+    </update>
+
+</mapper>

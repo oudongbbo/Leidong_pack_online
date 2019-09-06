@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.UserDao">
+
+    <sql id="columnName">
+        username,
+        password,
+        realname,
+        mobile,
+        email,
+        userDesc,
+        createTime,
+        userGroupId,
+        status
+    </sql>
+
+    <sql id="select">
+        SELECT
+            a.userId,
+            a.username,
+            a.password,
+            a.realname,
+            a.mobile,
+            a.email,
+            a.userDesc,
+            a.createTime,
+            a.userGroupId,
+            a.status,
+            b.groupName AS 'userGroupName'
+        FROM tbl_user AS a,
+            tbl_user_group AS b
+        WHERE a.userGroupId = b.groupId
+    </sql>
+
+    <!-- 获取对应标识数的用户 -->
+    <select id="get" resultType="com.starjoys.tool.packonline.modules.system.entity.UserEntity">
+        <include refid="select"/>
+        AND a.username = #{id}
+        AND a.status = 1;
+    </select>
+
+    <!-- 获取对应标识数的用户 -->
+    <select id="getById" resultType="com.starjoys.tool.packonline.modules.system.entity.UserEntity">
+        <include refid="select"/>
+        AND a.userId = #{userId}
+        AND a.status = 1;
+    </select>
+
+    <!-- 通过用户名查找用户 -->
+    <select id="getByUsername" resultType="com.starjoys.tool.packonline.modules.system.entity.UserEntity">
+        <include refid="select"/>
+        AND a.username = #{username};
+    </select>
+
+    <!-- 获取用户列表 -->
+    <select id="findAllList" resultType="com.starjoys.tool.packonline.modules.system.entity.UserEntity">
+        <include refid="select"/>
+    </select>
+
+    <!-- 获取带过滤的列表 -->
+    <select id="findList" resultType="com.starjoys.tool.packonline.modules.system.entity.UserEntity">
+        <include refid="select" />
+        AND b.companyId IN
+        (SELECT c.companyId
+              FROM tbl_user_group AS c
+              WHERE c.groupId = #{userGroupId})
+    </select>
+
+    <!-- 插入用户数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_user(<include refid="columnName"/>)
+        VALUES (
+        #{username},
+        #{password},
+        #{realname},
+        #{mobile},
+        #{email},
+        #{userDesc},
+        #{createTime},
+        #{userGroupId},
+        #{status})
+    </insert>
+
+    <!-- 更新用户数据 -->
+    <update id="update">
+        UPDATE
+            tbl_user
+        SET
+            username    = #{username},
+            realname    = #{realname},
+            mobile      = #{mobile},
+            email       = #{email},
+            userGroupId = #{userGroupId},
+            status      = #{status}
+        WHERE
+            userId = #{userId}
+    </update>
+
+    <!-- 改变状态 -->
+    <update id="delete">
+        UPDATE
+            tbl_user
+        SET
+            status = CASE
+                     WHEN status = 0
+                         THEN 1
+                     WHEN status = 1
+                         THEN 0
+                     ELSE 0
+                     END
+        WHERE
+            userId = #{id}
+    </update>
+
+    <!-- 修改用户密码 -->
+    <update id="updatePassword">
+        UPDATE
+        tbl_user
+        SET
+        password = #{password}
+        WHERE
+        userId = #{userId}
+    </update>
+
+</mapper>

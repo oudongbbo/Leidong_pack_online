@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packrecord.dao.AllPackRecordDao">
+
+    <resultMap id="allRecordRM" type="com.starjoys.tool.packonline.modules.packrecord.entity.AllPackRecordEntity">
+        <id property="recordId" column="recordId" />
+        <result property="game.gameId" column="game.gameId" />
+        <result property="game.gameName" column="game.gameName" />
+        <result property="user.userId" column="us.userId" />
+        <result property="user.username" column="us.username" />
+    </resultMap>
+
+    <sql id="columnName">
+        a.recordId,
+        a.gameId as 'game.gameId',
+        a.gameName as 'game.gameName',
+        us.userId as 'us.userId',
+        us.username as 'us.username',
+        a.mdRecordStartDate,
+        a.mdRecordEndDate,
+        a.mdRecordStart,
+        a.mdRecordEnd,
+        a.mdRecordNum,
+        a.mdRecordResultMsg,
+        a.mdRecordOutput,
+        a.mdRecordFileSource
+    </sql>
+
+    <sql id="baseColumnName">
+        mdRecordId,
+        gameId,
+        gameName,
+        userId,
+        mdRecordStartDate,
+        mdRecordEndDate,
+        mdRecordStart,
+        mdRecordEnd,
+        mdRecordNum,
+        mdRecordResultMsg,
+        mdRecordOutput,
+        mdRecordFileSource
+    </sql>
+
+    <!-- 获取推广包打包记录列表 -->
+    <select id="findAllList" resultMap="allRecordRM">
+        SELECT
+            <include refid="columnName" />
+        FROM tbl_md_record AS a
+        INNER JOIN tbl_user AS us
+        ON a.userId = us.userId
+        ORDER BY a.mdRecordStartDate DESC
+    </select>
+
+    <!-- 插入推广包打包数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_md_record(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{game.gameId},
+        #{game.gameName},
+        #{user.userId},
+        #{mdRecordStartDate},
+        #{mdRecordEndDate},
+        #{mdRecordStart},
+        #{mdRecordEnd},
+        #{mdRecordNum},
+        #{mdRecordResultMsg},
+        #{mdRecordOutput},
+        #{mdRecordFileSource})
+    </insert>
+
+    <!-- 推广包打包分页查询 -->
+    <select id="findListByPage" resultMap="allRecordRM">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_md_record AS a
+        INNER JOIN tbl_user AS us
+        ON a.userId = us.userId
+        WHERE a.userId != -1
+        <if test="game != null and game.gameId != null and game.gameId != ''">
+             AND a.gameId = #{game.gameId}
+        </if>
+        <if test="game != null and game.gameName != null and game.gameName != ''">
+            AND a.gameName = #{game.gameName}
+        </if>
+        <if test="mdRecordStart != null and mdRecordStart != ''">
+            AND mdRecordStart = #{mdRecordStart}
+        </if>
+        <if test="user != null and user.userId != null and user.userId != 0">
+            AND us.userId = #{user.userId}
+        </if>
+        <if test="currentUserGroup != null and currentUserGroup.company != null and currentUserGroup.company.companyId != 0">
+            AND us.userId IN (
+                SELECT tempUs.userId
+                    FROM tbl_user AS tempUs, tbl_user_group AS tempGroup
+                    WHERE
+                       tempGroup.companyId = #{currentUserGroup.company.companyId}
+                       AND tempUs.userGroupId = tempGroup.groupId
+            )
+        </if>
+        ORDER BY a.mdRecordStartDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+
+</mapper>

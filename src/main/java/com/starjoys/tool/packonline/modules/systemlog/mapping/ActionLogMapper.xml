@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.systemlog.dao.ActionLogDao">
+
+    <sql id="columnName">
+        actionId,
+        actionName,
+        actionUser,
+        actionUrl,
+        actionDate,
+        actionParam,
+        actionResult
+    </sql>
+
+
+    <sql id="baseColumnName">
+        actionId,
+        actionName,
+        actionUser,
+        actionUrl,
+        actionParam,
+        actionResult
+    </sql>
+
+
+    <!-- 分页查询 -->
+    <select id="findListByPage" resultType="ActionLogEntity" >
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_action_log
+        WHERE actionId != 0
+        <if test="actionName != null and actionName != ''">
+            AND actionName like CONCAT('%', #{actionName}, '%')
+        </if>
+        <if test="actionUser != null and actionUser != ''">
+            AND actionUser = #{actionUser}
+        </if>
+        ORDER BY actionDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+    <!-- 插入  -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="actionId">
+        INSERT INTO
+        tbl_action_log(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{actionName},
+        #{actionUser},
+        #{actionUrl},
+        #{actionParam},
+        #{actionResult}
+        )
+    </insert>
+
+</mapper>

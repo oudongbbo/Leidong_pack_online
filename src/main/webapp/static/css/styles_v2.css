@@ -1,0 +1,151 @@
+body {
+    font-size:14px;
+    font-family: 'FontAwesome', '微软雅黑';
+}
+
+td { font:14px FontAwesome, Microsoft YaHei;}
+
+
+.pack-layout {
+}
+
+#pack-table {
+}
+
+#pack-table .pack-form-controller {
+    width: 60%;
+}
+
+#pack-table .file-input {
+    width: 60%;
+}
+
+#pack-table .pack-table-title {
+    min-width: 120px;
+    width: 10%;
+    padding: 10px;
+
+    text-align: right;
+    vertical-align: middle;
+    font-weight: bold;
+}
+
+#pack-table .pack-table-row-right {
+    width: 60%;
+    padding: 10px;
+}
+
+#pack-table .pack-form-logs {
+    height: 260px;
+    padding: 8px;
+
+    background: white;
+    resize: vertical;
+
+    word-break: break-all;
+    word-wrap: break-word;
+}
+
+#pack-table .pack-console-logs {
+    min-height: 500px;
+    padding: 8px;
+
+    background: white;
+    resize: vertical;
+}
+
+
+.pack-layout label {
+}
+
+.pack-start-btn {
+    font-weight: bold;
+    height: 40px;
+}
+
+.pack-form-tip {
+    color: #a94442;
+    font-weight: bold;
+}
+
+.pack-result {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.pack-result-suc {
+    color: #3c763d;
+}
+
+.pack-result-error {
+    color: #a94442;
+}
+
+#pack-table-apk {
+
+}
+
+.modal-dialog {
+    margin-left: 25%;
+}
+
+.modal-content {
+    display: inline-block;
+    min-width: 400px;
+}
+
+.modal-title {
+    font-size: 16px;
+}
+
+#myModal #checkbox-all-select {
+    padding-left: 3px;
+}
+
+#myModal #checkbox-content {
+    margin-top: 6px;
+}
+
+#myModal #checkbox-table tr td label {
+    margin-top: 4px;
+}
+
+#myModal #checkbox-table tr td:not(:first-child) label {
+    margin-left: 14px;
+}
+
+#myModal input[type='checkbox'] {
+    margin-top: 5px;
+    margin-left: -16px;
+}
+
+#paramModal .modal-body {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+#paramModal table {
+    margin-bottom: 0px;
+}
+
+#paramModal tr:first-child td {
+    border-top: none;
+}
+
+#paramModal .param-name {
+    vertical-align: middle;
+    border-right: solid 1px #ddd;
+}
+
+#paramModal input[class=form-control] {
+    padding-left: 6px;
+}
+
+#paramModal select[class=form-control] {
+    padding-left: 2px;
+}
+
+
+
+
+

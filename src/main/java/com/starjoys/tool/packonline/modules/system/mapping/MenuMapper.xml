@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.MenuDao">
+
+    <sql id="columnName">
+        a.menuId,
+        a.menuName,
+        a.menuParentId,
+        a.menuUrl,
+        a.menuDesc,
+        a.menuSort,
+        a.menuIcon,
+        a.moduleId,
+        a.status,
+        a.isShow
+    </sql>
+
+    <sql id="baseColumnName">
+        menuId,
+        menuName,
+        menuParentId,
+        menuUrl,
+        menuDesc,
+        menuSort,
+        menuIcon,
+        moduleId,
+        status,
+        isShow
+    </sql>
+
+    <!-- 查找所有菜单列表 -->
+    <select id="findAllList" resultType="MenuEntity">
+        SELECT *
+        FROM `tbl_menu`
+        ORDER BY menuSort ASC
+    </select>
+
+    <!-- 查询多个id对应的菜单列表 -->
+    <select id="findChildOrParentListByIds" resultType="MenuEntity">
+        SELECT *
+        FROM tbl_menu
+        WHERE
+        <choose>
+            <when test="isChild">
+                menuParentId != 0
+            </when>
+            <otherwise>
+                menuParentId = 0
+            </otherwise>
+        </choose>
+        AND menuId IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        <if test="!isChild">
+            ORDER BY menuSort ASC
+        </if>
+    </select>
+
+    <!-- 通过多个id查找相关的父id并且去除本身是父类的菜单 -->
+    <select id="findParentIdListByIdsWithoutParent" resultType="java.lang.Integer">
+        SELECT
+        menuParentId
+        FROM
+        tbl_menu
+        WHERE
+        menuParentId != 0
+        AND
+        status = 1
+        AND
+        menuId IN
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        GROUP BY
+        menuParentId
+    </select>
+
+    <!-- 通过菜单网址获取菜单对象 -->
+    <select id="getByMenuUrl" resultType="MenuEntity">
+        SELECT *
+        FROM `tbl_menu`
+        WHERE menuUrl = #{menuUrl};
+    </select>
+
+    <!-- 通过父id查找列表 -->
+    <select id="findTreeListByParentId" resultType="MenuEntity">
+        SELECT
+        <include refid="columnName"/>
+        ,
+        (
+        CASE
+        WHEN a.menuIcon IS NOT NULL
+        AND a.menuIcon != '' THEN
+        CONCAT('icon-', a.menuIcon)
+        END
+        ) iconCls,
+        a.menuId AS 'id',
+        a.menuName AS 'text'
+        FROM
+        tbl_menu AS a
+        WHERE
+        a.menuParentId = #{parentId}
+        ORDER BY
+        menuSort ASC
+    </select>
+
+    <!-- 通过id获取菜单 -->
+    <select id="get" resultType="MenuEntity">
+        SELECT
+        <include refid="columnName"/>
+        FROM
+        tbl_menu AS a
+        WHERE
+        a.menuId = #{id}
+    </select>
+
+    <!-- 通过名称或链接查找列表 -->
+    <select id="findListByNameOrUrl" resultType="MenuEntity">
+        SELECT
+        <include refid="columnName"/>
+        FROM
+        tbl_menu AS a
+        WHERE
+        a.menuName = #{0}
+        OR a.menuUrl = #{1}
+    </select>
+
+    <!-- 通过名称或链接并排除相同的id查找列表 -->
+    <select id="findListByNameOrUrlWithoutId" resultType="MenuEntity">
+        SELECT
+        <include refid="columnName"/>
+        FROM
+        tbl_menu AS a
+        WHERE
+        (a.menuName = #{0}
+        OR a.menuUrl = #{1})
+        AND a.menuId != #{2}
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_menu(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{menuName},
+        #{menuParentId},
+        #{menuUrl},
+        #{menuDesc},
+        #{menuSort},
+        #{menuIcon},
+        #{moduleId},
+        #{status},
+        #{isShow}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE
+            tbl_menu
+        SET
+            menuName = #{menuName},
+            menuUrl  = #{menuUrl},
+            menuDesc = #{menuDesc},
+            menuIcon = #{menuIcon},
+            menuSort = #{menuSort},
+            moduleId = #{moduleId},
+            isShow     = #{isShow},
+            status     = #{status}
+        WHERE
+            menuId = #{menuId}
+    </update>
+
+    <!-- 更新所有与父菜单相关的模块id -->
+    <update id="updateAllModuleIdByParentId">
+        UPDATE
+            tbl_menu
+        SET
+            moduleId = #{moduleId}
+        WHERE
+            menuParentId = #{menuParentId}
+    </update>
+
+</mapper>

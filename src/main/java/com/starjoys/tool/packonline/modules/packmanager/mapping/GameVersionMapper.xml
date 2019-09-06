@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.GameVersionDao">
+
+    <resultMap id="gameVersionRM" type="GameEntity">
+        <id property="id" column="_id" />
+        <result property="ver.gameVerId" column="ver.gameVerId" />
+        <result property="ver._gameId" column="ver._gameId" />
+        <result property="ver.gameVerNum" column="ver.gameVerNum" />
+        <result property="ver.gameVerName" column="ver.gameVerName" />
+        <result property="ver.gameVerUpDate" column="ver.gameVerUpDate" />
+        <result property="ver.gameVerUpDesc" column="ver.gameVerUpDesc" />
+        <result property="ver.isNew" column="ver.isNew" />
+        <result property="ver.status" column="ver.status" />
+        <result property="ver.gameVerUpFDate" column="ver.gameVerUpFDate" />
+        <result property="ver.gameVerUpCPPath" column="ver.gameVerUpCPPath" />
+        <result property="ver.gameVerUpSJoysPath" column="ver.gameVerUpSJoysPath" />
+        <result property="ver.user.userId" column="us.userId" />
+        <result property="ver.user.username" column="us.username" />
+    </resultMap>
+
+    <sql id="columnName">
+        a._id,
+        a.gameId,
+        a.gameName,
+        a.gameShortName,
+        a.gameType,
+        a.gameCreateDate,
+        a.status,
+        ver.gameVerId as 'ver.gameVerId',
+        ver._gameId as 'ver._gameId',
+        ver.gameVerNum as 'ver.gameVerNum',
+        ver.gameVerName as 'ver.gameVerName',
+        ver.gameVerUpDate as 'ver.gameVerUpDate',
+        ver.gameVerUpDesc as 'ver.gameVerUpDesc',
+        ver.isNew as 'ver.isNew',
+        ver.status as 'ver.status',
+        ver.gameVerUpFDate as 'ver.gameVerUpFDate',
+        ver.gameVerUpCPPath as 'ver.gameVerUpCPPath',
+        ver.gameVerUpSJoysPath as 'ver.gameVerUpSJoysPath',
+        us.userId as 'us.userId',
+        us.username as 'us.username'
+    </sql>
+
+    <sql id="baseColumnName">
+        gameVerId,
+        _gameId,
+        gameVerNum,
+        gameVerName,
+        gameVerUpDate,
+        gameVerUpDesc,
+        isNew,
+        status,
+        gameVerUpFDate,
+        gameVerUpCPPath,
+        gameVerUpSJoysPath,
+        userId
+    </sql>
+
+    <!-- 获取游戏版本列表 -->
+    <select id="findList" resultMap="gameVersionRM">
+        SELECT
+            <include refid="columnName" />
+        FROM tbl_game AS a, tbl_game_version AS ver, tbl_user as us
+        WHERE a._id = #{id}
+        AND a._id = ver._gameId
+        AND ver.userId = us.userId
+        ORDER BY ver.gameVerUpDate DESC
+    </select>
+
+    <!-- 插入游戏版本数据 -->
+    <insert id="insert">
+        INSERT INTO
+            tbl_game_version(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{id},
+        #{ver.gameVerNum},
+        #{ver.gameVerName},
+        #{ver.gameVerUpDate},
+        #{ver.gameVerUpDesc},
+        1,
+        1,
+        #{ver.gameVerUpFDate},
+        #{ver.gameVerUpCPPath},
+        #{ver.gameVerUpSJoysPath},
+        #{ver.user.userId}
+        )
+    </insert>
+
+    <!-- 更新所有是否新的数据 -->
+    <update id="updateIsNew">
+        UPDATE
+            tbl_game_version
+        SET
+            isNew = #{ver.isNew}
+        WHERE
+            status = 1
+            AND _gameId = #{id}
+    </update>
+
+    <!-- 更新游戏版本数据 -->
+    <update id="update">
+        UPDATE
+            tbl_game_version
+        SET
+            gameVerNum = #{ver.gameVerNum},
+            gameVerName = #{ver.gameVerName},
+            gameVerUpDesc = #{ver.gameVerUpDesc}
+        WHERE
+            gameVerId = #{ver.gameVerId}
+    </update>
+
+    <!-- 删除所有对应的游戏版本信息 -->
+    <update id="deleteAll">
+        UPDATE
+            tbl_game_version
+        SET
+            isNew = 0,
+            status = 0
+        WHERE
+            _gameId = #{id}
+    </update>
+
+    <!-- 删除对应的游戏版本信息 -->
+    <update id="delete">
+        UPDATE
+            tbl_game_version
+        SET
+            isNew = 0,
+            status = 0
+        WHERE
+            _gameId = #{id}
+    </update>
+
+    <!-- 更新路径 -->
+    <update id="updatePath">
+        UPDATE
+            tbl_game_version
+        SET
+            gameVerUpSJoysPath = #{ver.gameVerUpSJoysPath},
+            gameVerUpCPPath = #{ver.gameVerUpCPPath}
+        WHERE
+            gameVerId = #{ver.gameVerId}
+    </update>
+
+</mapper>

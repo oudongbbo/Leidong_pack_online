@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.andrpack.dao.PackPathDao">
+
+    <resultMap id="packPathRM" type="PackPathEntity">
+        <id property="packPathId" column="packPathId" />
+        <result property="userId" column="user.userId" />
+        <result property="username" column="user.username" />
+        <result property="userStatus" column="user.status" />
+    </resultMap>
+
+    <sql id="columnName">
+        packPathId,
+        userId,
+        packPathText,
+        packPathCreateDate,
+        status
+    </sql>
+
+    <sql id="selectColumnName">
+        a.packPathId,
+        b.userId,
+        b.username,
+        b.status as 'userStatus',
+        a.packPathText,
+        a.packPathCreateDate,
+        a.status
+    </sql>
+
+    <sql id="select">
+        SELECT
+            <include refid="selectColumnName"/>
+        FROM tbl_pack_path AS a,
+            tbl_user AS b
+        WHERE a.userId = b.userId
+    </sql>
+
+    <!-- 通过删除标识查找打包路径列表 -->
+    <select id="findListByStatus" resultMap="packPathRM">
+        <include refid="select"/>
+        AND a.status = #{status};
+    </select>
+
+    <!-- 插入打包路径数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_pack_path(<include refid="columnName"/>)
+        VALUES (
+        0,
+        #{user.userId},
+        #{packPathText},
+        CURRENT_TIMESTAMP,
+        1)
+    </insert>
+
+    <!-- 改变状态 -->
+    <update id="delete">
+        UPDATE
+            tbl_pack_path
+        SET
+            status = 0
+        WHERE
+            packPathId = #{id}
+    </update>
+
+</mapper>

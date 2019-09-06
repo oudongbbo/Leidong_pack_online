@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packrecord.dao.ChannelRecordDao">
+
+    <resultMap id="channelFileRM" type="com.starjoys.tool.packonline.modules.packrecord.entity.ChannelFileEntity">
+        <id property="cchRecord.cchRecordId" column="cchRecordId"/>
+        <result property="gameParam.game.gameId" column="gameId"/>
+        <result property="gameParam.game.gameName" column="gameName"/>
+        <result property="gameParam.game.gameType" column="gameType"/>
+        <result property="gameParam.game.gameShortName" column="gameShortName"/>
+        <result property="gameParam.cch.cchName" column="cchName"/>
+        <result property="gameParam.cch.cchShortName" column="cchShortName"/>
+        <result property="cchRecord.cchRecordNum" column="cchRecordNum"/>
+        <result property="cchRecord.user.username" column="username"/>
+        <result property="cchRecord.cchRecordStartDate" column="cchRecordStartDate"/>
+        <result property="cchRecord.cchRecordEndDate" column="cchRecordEndDate"/>
+        <result property="cchRecord.cchRecordResultMsg" column="cchRecordResultMsg"/>
+        <result property="cchRecord.cchRecordOutput" column="cchRecordOutput"/>
+    </resultMap>
+
+    <sql id="columnName">
+        cchRecordId,
+        userId,
+        cchRecordStartDate,
+        cchRecordEndDate,
+        cchRecordNum,
+        cchRecordResultMsg,
+        cchRecordOutput
+    </sql>
+
+    <!-- 查询所有数据 -->
+    <select id="findAllList" resultMap="channelFileRM">
+        SELECT
+            distinct
+            a.cchRecordId,
+            game.gameId,
+            game.gameName,
+            game.gameType,
+            game.gameShortName,
+            (CASE WHEN a.cchRecordNum > 1
+                THEN '多渠道'
+             ELSE cch.cchName END)      cchName,
+            (CASE WHEN a.cchRecordNum > 1
+                THEN '无'
+             ELSE cch.cchShortName END) cchShortName,
+            a.cchRecordNum,
+            us.username,
+            a.cchRecordStartDate,
+            a.cchRecordEndDate,
+            a.cchRecordResultMsg,
+            a.cchRecordOutput
+        FROM ((((tbl_channel_record AS a
+            LEFT JOIN tbl_channel_file AS file
+                ON a.cchRecordId = file.cchRecordId)
+            LEFT JOIN tbl_game_param AS param
+                ON file.gameParamId = param.gameParamId)
+            LEFT JOIN tbl_game AS game
+                ON param._gameId = game._id)
+            LEFT JOIN tbl_channel AS cch
+                ON param._cchId = cch._id)
+            LEFT JOIN tbl_user AS us
+                ON a.userId = us.userId
+        WHERE
+            game.gameId IS NOT NULL
+            AND cch.cchId IS NOT NULL
+        ORDER BY a.cchRecordStartDate DESC
+    </select>
+
+    <!-- 插入渠道打包记录数据 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="cchRecord.cchRecordId">
+        INSERT INTO
+        tbl_channel_record(<include refid="columnName"/>)
+        VALUES (
+        0,
+        #{cchRecord.user.userId},
+        #{cchRecord.cchRecordStartDate},
+        #{cchRecord.cchRecordEndDate},
+        #{cchRecord.cchRecordNum},
+        #{cchRecord.cchRecordResultMsg},
+        #{cchRecord.cchRecordOutput}
+        )
+    </insert>
+
+    <!-- 更新渠道打包记录数据 -->
+    <update id="update">
+        UPDATE
+            tbl_channel_record
+        SET
+            cchRecordEndDate   = #{cchRecord.cchRecordEndDate},
+            cchRecordResultMsg = #{cchRecord.cchRecordResultMsg},
+            cchRecordOutput    = #{cchRecord.cchRecordOutput}
+        WHERE
+            cchRecordId = #{cchRecord.cchRecordId}
+    </update>
+
+
+    <select id="findListByPage" resultMap="channelFileRM">
+        SELECT
+            distinct
+            SQL_CALC_FOUND_ROWS
+            a.cchRecordId,
+            game.gameId,
+            game.gameName,
+            game.gameType,
+            game.gameShortName,
+            (CASE WHEN a.cchRecordNum > 1
+                THEN '多渠道'
+             ELSE cch.cchName END)      cchName,
+            (CASE WHEN a.cchRecordNum > 1
+                THEN '无'
+             ELSE cch.cchShortName END) cchShortName,
+            a.cchRecordNum,
+            us.username,
+            a.cchRecordStartDate,
+            a.cchRecordEndDate,
+            a.cchRecordResultMsg,
+            a.cchRecordOutput
+        FROM ((((tbl_channel_record AS a
+            LEFT JOIN tbl_channel_file AS file
+                ON a.cchRecordId = file.cchRecordId)
+            LEFT JOIN tbl_game_param AS param
+                ON file.gameParamId = param.gameParamId)
+            LEFT JOIN tbl_game AS game
+                ON param._gameId = game._id)
+            LEFT JOIN tbl_channel AS cch
+                ON param._cchId = cch._id)
+            LEFT JOIN tbl_user AS us
+                ON a.userId = us.userId
+        WHERE
+            cch.cchId IS NOT NULL
+        <if test="gameParam != null and gameParam.game != null and gameParam.game.gameId != null and gameParam.game.gameId != ''">
+            AND game.gameId = #{gameParam.game.gameId}
+        </if>
+        <if test="gameParam != null and gameParam.game != null and gameParam.game.gameName != null and gameParam.game.gameName != ''">
+            AND game.gameName = #{gameParam.game.gameName}
+        </if>
+        <if test="gameParam != null and gameParam.game != null and gameParam.game.gameType != null and gameParam.game.gameType != 0">
+            AND game.gameType = #{gameParam.game.gameType}
+        </if>
+        <if test="gameParam != null and gameParam.cch != null and gameParam.cch.id != null and gameParam.cch.id != 0">
+            AND cch._id = #{gameParam.cch.id}
+        </if>
+        <if test="gameParam != null and gameParam.cch != null and gameParam.cch.cchShortName != null and gameParam.cch.cchShortName != ''">
+            AND cch.cchShortName = #{gameParam.cch.cchShortName}
+        </if>
+        <if test="cchRecord != null and cchRecord.user != null and cchRecord.user.userId != null and cchRecord.user.userId != 0">
+            AND us.userId = #{cchRecord.user.userId}
+        </if>
+        <if test="currentUserGroup != null and currentUserGroup.company != null and currentUserGroup.company.companyId != 0">
+            AND us.userId IN (
+            SELECT tempUs.userId
+            FROM tbl_user AS tempUs, tbl_user_group AS tempGroup
+            WHERE
+            tempGroup.companyId = #{currentUserGroup.company.companyId}
+            AND tempUs.userGroupId = tempGroup.groupId
+            )
+        </if>
+        ORDER BY a.cchRecordStartDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <select id="findCountByPage" resultType="Integer">
+        SELECT found_rows()
+    </select>
+
+
+</mapper>

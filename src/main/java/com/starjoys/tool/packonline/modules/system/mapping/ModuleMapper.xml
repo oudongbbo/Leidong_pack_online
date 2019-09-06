@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.ModuleDao">
+
+    <sql id="columnName">
+        a.moduleId,
+        a.moduleName,
+        a.moduleUrl,
+        a.moduleDesc,
+        a.moduleSort,
+        a.moduleIcon,
+        a.status,
+        a.isShow
+    </sql>
+
+    <sql id="baseColumnName">
+        moduleId,
+        moduleName,
+        moduleUrl,
+        moduleDesc,
+        moduleSort,
+        moduleIcon,
+        status,
+        isShow
+    </sql>
+
+    <!-- 模块列表 -->
+    <select id="findAllList" resultType="ModuleEntity">
+        SELECT *
+        FROM `tbl_module`
+        ORDER BY moduleSort ASC
+    </select>
+
+    <!-- 通过名称或链接查找列表 -->
+    <select id="findListByNameOrUrl" resultType="ModuleEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+            tbl_module AS a
+        WHERE
+            a.moduleName = #{0}
+            OR a.moduleUrl = #{1}
+    </select>
+
+    <!-- 通过id获取模块 -->
+    <select id="get" resultType="ModuleEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        tbl_module AS a
+        WHERE
+        a.moduleId = #{id}
+    </select>
+
+    <!-- 通过名称或链接并排除相同的id查找列表 -->
+    <select id="findListByNameOrUrlWithoutId" resultType="ModuleEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM
+        tbl_module AS a
+        WHERE
+        (a.moduleName = #{0}
+        OR a.moduleUrl = #{1})
+        AND a.moduleId != #{2}
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_module(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{moduleName},
+        #{moduleUrl},
+        #{moduleDesc},
+        #{moduleSort},
+        #{moduleIcon},
+        #{status},
+        #{isShow}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE
+            tbl_module
+        SET
+            moduleName = #{moduleName},
+            moduleUrl = #{moduleUrl},
+            moduleIcon = #{moduleIcon},
+            moduleDesc = #{moduleDesc},
+            moduleSort = #{moduleSort},
+            isShow = #{isShow},
+            status = #{status}
+        WHERE
+            moduleId = #{moduleId}
+    </update>
+
+</mapper>

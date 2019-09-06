@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.UserGroupDao">
+
+    <sql id="columnName">
+        a.groupId,
+        a.groupName,
+        a.groupMenus,
+        a.groupActs,
+        a.groupDesc,
+        a.groupOwnId,
+        a.groupCreateDate,
+        a.groupSuperManager,
+        a.status,
+        a.companyId as 'company.companyId',
+        b.companyName as 'company.companyName'
+    </sql>
+
+    <sql id="baseColumnName">
+        groupId,
+        companyId,
+        groupName,
+        groupMenus,
+        groupActs,
+        groupDesc,
+        groupOwnId,
+        status
+    </sql>
+
+    <!-- 获取对应标识数的用户组 -->
+    <select id="get" resultType="UserGroupEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_user_group AS a, tbl_company AS b
+        WHERE a.companyId = b.companyId
+        AND a.groupId = #{id}
+    </select>
+
+    <!-- 条件查询列表 -->
+    <select id="findList" resultType="UserGroupEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_user_group AS a, tbl_company AS b
+        WHERE a.companyId = b.companyId
+        AND b.status = #{FLAG_STATUS_ACTIVE}
+        <if test="groupName != null and groupName != ''">
+            AND a.groupName = #{groupName}
+        </if>
+    </select>
+
+    <!-- 查找所有数据 -->
+    <select id="findAllList" resultType="UserGroupEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_user_group AS a, tbl_company AS b
+        WHERE a.companyId = b.companyId
+        AND b.status = 1
+    </select>
+
+    <!-- 用户组管理分页查询 -->
+    <select id="findListByPage" resultType="UserGroupEntity">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_user_group AS a, tbl_company AS b
+        WHERE a.companyId = b.companyId
+        <if test="groupId != null and groupId != 0">
+            AND a.groupId = #{groupId}
+        </if>
+        <if test="company != null and company.companyId != null and company.companyId != 0">
+            AND a.companyId = #{company.companyId}
+        </if>
+        ORDER BY a.groupCreateDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_user_group(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{company.companyId},
+        #{groupName},
+        #{groupMenus},
+        #{groupActs},
+        #{groupDesc},
+        0,
+        #{status}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE
+            tbl_user_group
+        SET
+            companyId = #{company.companyId},
+            groupName = #{groupName},
+            groupDesc = #{groupDesc},
+            status = #{status}
+        WHERE
+            groupId = #{groupId}
+    </update>
+
+    <!-- 更新权限 -->
+    <update id="updateAuth">
+        UPDATE
+        tbl_user_group
+        SET
+        groupMenus = #{groupMenus},
+        groupActs = #{groupActs}
+        WHERE
+        groupId = #{groupId}
+    </update>
+
+</mapper>

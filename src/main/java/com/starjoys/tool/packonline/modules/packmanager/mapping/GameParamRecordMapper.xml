@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.GameParamRecordDao">
+
+    <resultMap id="gameParamRM" type="GameParamEntity">
+        <id property="gameParamId" column="gameParamId" />
+        <result property="record.gpRecordId" column="record.gpRecordId" />
+        <result property="record.gameParamId" column="record.gameParamId" />
+        <result property="record.gpRecordData" column="record.gpRecordData" />
+        <result property="record.gpRecordUpDate" column="record.gpRecordUpDate" />
+        <result property="record.gpRecordUpDesc" column="record.gpRecordUpDesc" />
+        <result property="record.isNew" column="record.isNew" />
+        <result property="record.status" column="record.status" />
+        <result property="game.id" column="game._id" />
+        <result property="game.gameId" column="game.gameId" />
+        <result property="game.gameName" column="game.gameName" />
+        <result property="game.gameShortName" column="game.gameShortName" />
+        <result property="game.gameType" column="game.gameType" />
+        <result property="game.gameCreateDate" column="game.gameCreateDate" />
+        <result property="game.status" column="game.status" />
+        <result property="cch.id" column="cch._id" />
+        <result property="cch.cchId" column="cch.cchId" />
+        <result property="cch.cchName" column="cch.cchName" />
+        <result property="cch.cchShortName" column="cch.cchShortName" />
+        <result property="cch.cchAllParam" column="cch.cchAllParam" />
+        <result property="cch.cchRequireParam" column="cch.cchRequireParam" />
+        <result property="cch.cchSplash" column="cch.cchSplash" />
+        <result property="cch.cchSubscript" column="cch.cchSubscript" />
+        <result property="cch.cchCreateDate" column="cch.cchCreateDate" />
+        <result property="cch.cchWeight" column="cch.cchWeight" />
+        <result property="cch.status" column="cch.status" />
+        <result property="record.user.status" column="us.status" />
+        <result property="record.user.username" column="us.username" />
+    </resultMap>
+
+    <sql id="columnName">
+        a.gameParamId,
+        a._gameId,
+        a._cchId,
+        a.gameParamCreateDate,
+        a.gameParamIcon,
+        a.status,
+        record.gpRecordId as 'record.gpRecordId',
+        record.gameParamId as 'record.gameParamId',
+        record.gpRecordData as 'record.gpRecordData',
+        record.gpRecordUpDate as 'record.gpRecordUpDate',
+        record.gpRecordUpDesc as 'record.gpRecordUpDesc',
+        record.isNew as 'record.isNew',
+        record.status as 'record.status',
+        game._id as 'game._id',
+        game.gameId as 'game.gameId',
+        game.gameName as 'game.gameName',
+        game.gameShortName as 'game.gameShortName',
+        game.gameType as 'game.gameType',
+        game.gameCreateDate as 'game.gameCreateDate',
+        game.status as 'game.status',
+        cch._id as 'cch._id',
+        cch.cchId as 'cch.cchId',
+        cch.cchName as 'cch.cchName',
+        cch.cchShortName as 'cch.cchShortName',
+        cch.cchAllParam as 'cch.cchAllParam',
+        cch.cchRequireParam as 'cch.cchRequireParam',
+        cch.cchSplash as 'cch.cchSplash',
+        cch.cchSubscript as 'cch.cchSubscript',
+        cch.cchCreateDate as 'cch.cchCreateDate',
+        cch.cchWeight as 'cch.cchWeight',
+        cch.status as 'cch.status',
+        us.userId as 'us.userId',
+        us.username as 'us.username'
+    </sql>
+
+    <sql id="baseColumnName">
+        gpRecordId,
+        gameParamId,
+        userId,
+        gpRecordData,
+        gpRecordUpDate,
+        gpRecordUpDesc,
+        isNew,
+        status
+    </sql>
+
+    <!-- 获取游戏参数记录列表 -->
+    <select id="findList" resultMap="gameParamRM">
+        SELECT
+        <include refid="columnName" />
+        FROM (((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.status = 1
+        AND a.gameParamId = record.gameParamId)
+        INNER JOIN tbl_user AS us
+        ON record.userId = us.userId
+        WHERE record.gameParamId = #{gameParamId}
+        ORDER BY record.gpRecordUpDate DESC
+    </select>
+
+    <!-- 获取对应标识的游戏 -->
+    <select id="get" resultType="GameParamEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM (((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.status = 1
+        AND a.gameParamId = record.gameParamId)
+        INNER JOIN tbl_user AS us
+        ON record.userId = us.userId
+        WHERE record.gpRecordId = #{id}
+    </select>
+
+    <!-- 插入游戏参数记录  -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_game_param_record(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{gameParamId},
+        #{record.user.userId},
+        #{record.gpRecordData},
+        #{record.gpRecordUpDate},
+        #{record.gpRecordUpDesc},
+        1,
+        1
+        )
+    </insert>
+
+    <!-- 更新所有是否新的数据 -->
+    <update id="updateIsNew">
+        UPDATE
+            tbl_game_param_record
+        SET
+            isNew = #{record.isNew}
+        WHERE
+            status = 1
+            AND gameParamId = #{gameParamId}
+    </update>
+
+    <!-- 更新游戏参数记录信息 -->
+    <update id="update">
+        UPDATE
+            tbl_game_param_record
+        SET
+            gpRecordUpDesc = #{record.gpRecordUpDesc}
+        WHERE
+            gpRecordId = #{record.gpRecordId}
+    </update>
+
+    <!-- 删除游戏参数记录信息 -->
+    <delete id="delete">
+        UPDATE
+            tbl_game_param_record
+        SET
+            isNew = 0,
+            status = 0
+        WHERE
+            gameParamId = #{id}
+    </delete>
+
+    <!-- 更新渠道参数数据 -->
+    <update id="updateRecordData">
+        UPDATE
+            tbl_game_param_record
+        SET
+            gpRecordData = #{record.gpRecordData}
+        WHERE
+            gpRecordId = #{record.gpRecordId}
+    </update>
+
+</mapper>

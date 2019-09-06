@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packmanager.dao.GameParamDao">
+
+    <resultMap id="gameParamRM" type="GameParamEntity">
+        <id property="gameParamId" column="gameParamId" />
+        <result property="record.gpRecordId" column="record.gpRecordId" />
+        <result property="record.gameParamId" column="record.gameParamId" />
+        <result property="record.gpRecordData" column="record.gpRecordData" />
+        <result property="record.gpRecordUpDate" column="record.gpRecordUpDate" />
+        <result property="record.gpRecordUpDesc" column="record.gpRecordUpDesc" />
+        <result property="record.isNew" column="record.isNew" />
+        <result property="record.status" column="record.status" />
+        <result property="game.id" column="game._id" />
+        <result property="game.gameId" column="game.gameId" />
+        <result property="game.gameName" column="game.gameName" />
+        <result property="game.gameShortName" column="game.gameShortName" />
+        <result property="game.gameType" column="game.gameType" />
+        <result property="game.gameCreateDate" column="game.gameCreateDate" />
+        <result property="game.status" column="game.status" />
+        <result property="game.company.companyId" column="game.company.companyId" />
+        <result property="cch.id" column="cch._id" />
+        <result property="cch.cchId" column="cch.cchId" />
+        <result property="cch.cchName" column="cch.cchName" />
+        <result property="cch.cchShortName" column="cch.cchShortName" />
+        <result property="cch.cchAllParam" column="cch.cchAllParam" />
+        <result property="cch.cchRequireParam" column="cch.cchRequireParam" />
+        <result property="cch.cchSplash" column="cch.cchSplash" />
+        <result property="cch.cchSubscript" column="cch.cchSubscript" />
+        <result property="cch.cchCreateDate" column="cch.cchCreateDate" />
+        <result property="cch.cchWeight" column="cch.cchWeight" />
+        <result property="cch.status" column="cch.status" />
+    </resultMap>
+
+    <sql id="columnName">
+        a.gameParamId,
+        a._gameId,
+        a._cchId,
+        a.gameParamCreateDate,
+        a.gameParamIcon,
+        a.status,
+        record.gpRecordId as 'record.gpRecordId',
+        record.gameParamId as 'record.gameParamId',
+        record.gpRecordData as 'record.gpRecordData',
+        record.gpRecordUpDate as 'record.gpRecordUpDate',
+        record.gpRecordUpDesc as 'record.gpRecordUpDesc',
+        record.isNew as 'record.isNew',
+        record.status as 'record.status',
+        game._id as 'game._id',
+        game.gameId as 'game.gameId',
+        game.gameName as 'game.gameName',
+        game.gameShortName as 'game.gameShortName',
+        game.gameType as 'game.gameType',
+        game.gameCreateDate as 'game.gameCreateDate',
+        game.status as 'game.status',
+        game.companyId as 'game.company.companyId',
+        cch._id as 'cch._id',
+        cch.cchId as 'cch.cchId',
+        cch.cchName as 'cch.cchName',
+        cch.cchShortName as 'cch.cchShortName',
+        cch.cchAllParam as 'cch.cchAllParam',
+        cch.cchRequireParam as 'cch.cchRequireParam',
+        cch.cchSplash as 'cch.cchSplash',
+        cch.cchSubscript as 'cch.cchSubscript',
+        cch.cchCreateDate as 'cch.cchCreateDate',
+        cch.cchWeight as 'cch.cchWeight',
+        cch.status as 'cch.status'
+    </sql>
+
+    <resultMap id="gameParamByKeyRM" type="GameParamEntity">
+        <id property="gameParamId" column="gameParamId" />
+        <result property="game.id" column="_gameId" />
+        <result property="cch.id" column="_cchId" />
+    </resultMap>
+
+    <sql id="baseColumnName">
+        gameParamId,
+        _gameId,
+        _cchId,
+        gameParamCreateDate,
+        gameParamIcon,
+        status
+    </sql>
+
+    <!-- 获取游戏参数列表 -->
+    <select id="findAllList" resultMap="gameParamRM">
+        SELECT
+        <include refid="columnName" />
+        FROM ((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.isNew = 1
+        AND record.status = 1
+        AND a.gameParamId = record.gameParamId
+        ORDER BY cch.cchWeight, cchCreateDate
+    </select>
+
+    <!-- 获取游戏参数 -->
+    <select id="get" resultMap="gameParamRM" >
+        SELECT
+        <include refid="columnName" />
+        FROM ((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.isNew = 1
+        AND record.status = 1
+        AND a.gameParamId = record.gameParamId
+        WHERE a.gameParamId = #{id}
+    </select>
+
+    <!-- 通过主键获取游戏参数 -->
+    <select id="getByKeyWithActive" resultMap="gameParamByKeyRM" >
+        SELECT
+        <include refid="baseColumnName" />
+        FROM tbl_game_param
+        WHERE _gameId = #{0}
+        AND _cchId = #{1}
+        AND status = 1
+    </select>
+
+    <!-- 插入游戏参数  -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_game_param(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{game.id},
+        #{cch.id},
+        #{gameParamCreateDate},
+        #{gameParamIcon},
+        1
+        );
+    </insert>
+
+    <!-- 更新游戏参数信息 -->
+    <update id="update">
+        UPDATE
+            tbl_game_param
+        SET
+            gameParamIcon = #{gameParamIcon}
+        WHERE
+            gameParamId = #{gameParamId}
+    </update>
+
+    <!-- 删除游戏参数信息 -->
+    <delete id="delete">
+        UPDATE
+            tbl_game_param
+        SET
+            status = 0
+        WHERE
+            gameParamId = #{id}
+    </delete>
+
+    <!-- 通过多个id查找出游戏参数列表 -->
+    <select id="findListByIds" resultMap="gameParamRM">
+        SELECT
+        <include refid="columnName" />
+        FROM ((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.status = 1
+        AND record.isNew = 1
+        AND a.gameParamId = record.gameParamId
+        WHERE a.status = 1
+        AND a.gameParamId IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <!-- 游戏参数管理分页查询 -->
+    <select id="findListByPage" resultMap="gameParamRM">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM ((tbl_game_param AS a
+        INNER JOIN tbl_game AS game
+        ON a._gameId = game._id)
+        INNER JOIN tbl_channel AS cch
+        ON a._cchId = cch._id)
+        INNER JOIN tbl_game_param_record AS record
+        ON record.isNew = #{FLAG_STATUS_ACTIVE}
+        AND record.status = #{FLAG_STATUS_ACTIVE}
+        AND a.gameParamId = record.gameParamId
+        WHERE a.status = #{FLAG_STATUS_ACTIVE}
+        <if test="game != null and game.company != null and game.company.companyId != -1">
+            AND game.companyId = #{game.company.companyId}
+        </if>
+        <if test="game != null and game.gameId != null and game.gameId != ''">
+            AND game.gameId = #{game.gameId}
+        </if>
+        <if test="game != null and game.gameName != null and game.gameName != ''">
+            AND game.gameName = #{game.gameName}
+        </if>
+        <if test="game != null and game.gameType != null and game.gameType != 0">
+            AND game.gameType = #{game.gameType}
+        </if>
+        <if test="cch != null and cch.id != null and cch.id != 0">
+            AND cch._id = #{cch.id}
+        </if>
+        <if test="cch != null and cch.cchShortName != null and cch.cchShortName != ''">
+            AND cch.cchShortName = #{cch.cchShortName}
+        </if>
+        ORDER BY record.gpRecordUpDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+</mapper>

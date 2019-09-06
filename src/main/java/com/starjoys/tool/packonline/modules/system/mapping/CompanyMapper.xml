@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.CompanyDao">
+
+    <sql id="columnName">
+        a.companyId,
+        a.companyName,
+        a.companyDesc,
+        a.companyCreateDate,
+        a.status
+    </sql>
+
+    <sql id="baseColumnName">
+        companyId,
+        companyName,
+        companyDesc,
+        status
+    </sql>
+
+    <!-- 获取对应标识数 -->
+    <select id="get" resultType="com.starjoys.tool.packonline.modules.system.entity.CompanyEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_company AS a
+        WHERE a.companyId = #{id}
+    </select>
+
+    <!-- 查找所有数据 -->
+    <select id="findAllList" resultType="com.starjoys.tool.packonline.modules.system.entity.CompanyEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_company AS a
+    </select>
+
+    <!-- 条件查询列表 -->
+    <select id="findList" resultType="com.starjoys.tool.packonline.modules.system.entity.CompanyEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_company AS a
+        WHERE a.companyId != -1
+        <if test="companyName != null and companyName != ''">
+            AND a.companyName = #{companyName}
+        </if>
+    </select>
+
+    <!-- 分页查询 -->
+    <select id="findListByPage" resultType="com.starjoys.tool.packonline.modules.system.entity.CompanyEntity">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_company AS a
+        WHERE a.companyId != -1
+        <if test="companyId != null and companyId != 0">
+            AND a.companyId = #{companyId}
+        </if>
+        ORDER BY a.companyCreateDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+    <!-- 插入 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_company(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{companyName},
+        #{companyDesc},
+        #{status}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE
+            tbl_company
+        SET
+            companyName = #{companyName},
+            companyDesc = #{companyDesc},
+            status = #{status}
+        WHERE
+            companyId = #{companyId}
+    </update>
+
+
+</mapper>

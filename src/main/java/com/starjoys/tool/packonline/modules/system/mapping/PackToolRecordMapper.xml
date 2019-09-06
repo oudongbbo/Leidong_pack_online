@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.system.dao.PackToolRecordDao">
+
+    <sql id="columnName">
+        tool.packToolId,
+        tool.packToolName,
+        tool.packToolFileName,
+        tool.packToolCreateDate,
+        tool.status,
+        a.ptRecordId AS 'record.ptRecordId',
+        a.ptRecordUpPath AS 'record.ptRecordUpPath',
+        a.ptRecordUpDate AS 'record.ptRecordUpDate',
+        a.ptRecordUpDesc AS 'record.ptRecordUpDesc',
+        a.status AS 'record.status',
+        us.userId AS 'record.us.userId',
+        us.username AS 'record.us.username'
+    </sql>
+
+
+    <sql id="baseColumnName">
+        ptRecordId,
+        packToolId,
+        userId,
+        ptRecordUpPath,
+        ptRecordUpDate,
+        ptRecordUpDesc,
+        status
+    </sql>
+
+    <!-- 带过滤的查找列表 -->
+    <select id="findList" resultType="com.starjoys.tool.packonline.modules.system.entity.PackToolEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_pack_tool_record AS a, tbl_pack_tool AS tool, tbl_user AS us
+        WHERE a.packToolId = #{packToolId}
+        AND a.packToolId = tool.packToolId
+        AND a.userId = us.userId
+        ORDER BY
+        a.ptRecordUpDate DESC
+    </select>
+
+    <!-- 获取单条数据 -->
+    <select id="get" resultType="com.starjoys.tool.packonline.modules.system.entity.PackToolEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_pack_tool_record AS a, tbl_pack_tool AS tool, tbl_user AS us
+        WHERE a.ptRecordId = #{record.ptRecordId}
+        AND a.packToolId = tool.packToolId
+        AND a.userId = us.userId
+    </select>
+
+    <!-- 插入数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_pack_tool_record(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{packToolId},
+        #{record.us.userId},
+        #{record.ptRecordUpPath},
+        #{record.ptRecordUpDate},
+        #{record.ptRecordUpDesc},
+        1
+        )
+    </insert>
+
+    <!-- 更新数据 -->
+    <update id="update">
+        UPDATE
+        tbl_pack_tool_record
+        SET
+        ptRecordUpDesc = #{record.ptRecordUpDesc}
+        WHERE
+        ptRecordId = #{record.ptRecordId}
+    </update>
+
+
+</mapper>

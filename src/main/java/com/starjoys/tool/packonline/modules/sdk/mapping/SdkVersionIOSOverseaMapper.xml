@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.sdk.dao.SdkVersionIOSOverseaDao">
+
+    <sql id="columnName">
+        sdk.sdkId,
+        sdk.sdkName,
+        sdk.sdkCchId,
+        sdk.sdkCreateDate,
+        sdk.status,
+        a.sdkVerId AS 'ver.sdkVerId',
+        a.sdkVerName AS 'ver.sdkVerName',
+        a.sdkVerUpDate AS 'ver.sdkVerUpDate',
+        a.sdkVerUpDesc AS 'ver.sdkVerUpDesc',
+        a.sdkVerUpPath AS 'ver.sdkVerUpPath',
+        a.isNew AS 'ver.isNew',
+        a.status AS 'ver.status',
+        us.userId AS 'ver.us.userId',
+        us.username AS 'ver.us.username'
+    </sql>
+
+
+    <sql id="baseColumnName">
+        sdkVerId,
+        sdkId,
+        userId,
+        sdkVerName,
+        sdkVerUpDate,
+        sdkVerUpDesc,
+        sdkVerUpPath,
+        isNew,
+        status
+    </sql>
+
+    <!-- 带过滤的查找列表 -->
+    <select id="findList" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_sdk_version_ios_oversea AS a, tbl_sdk_ios_oversea AS sdk, tbl_user AS us
+        WHERE sdk.sdkId = #{sdkId}
+        AND a.sdkId = sdk.sdkId
+        AND a.userId = us.userId
+        ORDER BY
+        a.sdkVerUpDate DESC
+    </select>
+
+    <!-- 获取单条数据 -->
+    <select id="get" resultType="SdkIOSEntity">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_sdk_version_ios_oversea AS a, tbl_sdk_ios_oversea AS sdk, tbl_user AS us
+        WHERE a.sdkVerId = #{ver.sdkVerId}
+        AND a.sdkId = sdk.sdkId
+        AND a.userId = us.userId
+    </select>
+
+    <!-- 插入数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_sdk_version_ios_oversea(<include refid="baseColumnName" />)
+        VALUES (
+        0,
+        #{sdkId},
+        #{ver.us.userId},
+        #{ver.sdkVerName},
+        #{ver.sdkVerUpDate},
+        #{ver.sdkVerUpDesc},
+        #{ver.sdkVerUpPath},
+        1,
+        1
+        )
+    </insert>
+
+    <!-- 更新是否最新 -->
+    <update id="updateIsNew">
+        UPDATE
+        tbl_sdk_version_ios_oversea
+        SET
+        isNew = #{ver.isNew}
+        WHERE
+        status = 1
+        AND sdkId = #{sdkId}
+    </update>
+
+    <!-- 更新数据 -->
+    <update id="update">
+        UPDATE
+        tbl_sdk_version_ios_oversea
+        SET
+        sdkVerName = #{ver.sdkVerName},
+        sdkVerUpDesc = #{ver.sdkVerUpDesc}
+        WHERE
+        sdkVerId = #{ver.sdkVerId}
+    </update>
+
+
+</mapper>

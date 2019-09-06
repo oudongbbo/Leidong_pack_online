@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.starjoys.tool.packonline.modules.packrecord.dao.APKChangeDao">
+
+    <resultMap id="apkChangeRM" type="com.starjoys.tool.packonline.modules.packrecord.entity.APKChangeEntity">
+        <id property="apkChangeId" column="apkChangeId" />
+        <result property="game.gameId" column="game.gameId" />
+        <result property="game.gameName" column="game.gameName" />
+        <result property="user.userId" column="us.userId" />
+        <result property="user.username" column="us.username" />
+    </resultMap>
+
+    <sql id="columnName">
+        a.apkChangeId,
+        a.gameId as 'game.gameId',
+        a.gameName as 'game.gameName',
+        us.userId as 'us.userId',
+        us.username as 'us.username',
+        a.apkChangeIcon,
+        a.apkChangeName,
+        a.apkChangePackage,
+        a.apkChangeVersionNo,
+        a.apkChangeVersionName,
+        a.apkChangeSign,
+        a.apkChangeStartDate,
+        a.apkChangeEndDate,
+        a.apkChangeResultMsg,
+        a.apkChangeGameId,
+        a.apkChangeCchId,
+        a.apkChangeMdId,
+        a.apkChangeOutput,
+        a.apkChangeInput,
+        a.apkChangeFileSource
+    </sql>
+
+    <sql id="baseColumnName">
+        apkChangeId,
+        gameId,
+        gameName,
+        userId,
+        apkChangeIcon,
+        apkChangeName,
+        apkChangePackage,
+        apkChangeVersionNo,
+        apkChangeVersionName,
+        apkChangeSign,
+        apkChangeStartDate,
+        apkChangeEndDate,
+        apkChangeGameId,
+        apkChangeCchId,
+        apkChangeMdId,
+        apkChangeResultMsg,
+        apkChangeOutput,
+        apkChangeInput,
+        apkChangeFileSource
+    </sql>
+
+    <!-- 获取通用功能打包记录列表 -->
+    <select id="findAllList" resultMap="apkChangeRM">
+        SELECT
+        <include refid="columnName" />
+        FROM tbl_apk_change AS a
+        INNER JOIN tbl_user AS us
+        ON a.userId = us.userId
+        ORDER BY apkChangeStartDate DESC
+    </select>
+
+    <!-- 插入APK修改数据 -->
+    <insert id="insert">
+        INSERT INTO
+        tbl_apk_change(<include refid="baseColumnName"/>)
+        VALUES (
+        0,
+        #{game.gameId},
+        #{game.gameName},
+        #{user.userId},
+        #{apkChangeIcon},
+        #{apkChangeName},
+        #{apkChangePackage},
+        #{apkChangeVersionNo},
+        #{apkChangeVersionName},
+        #{apkChangeSign},
+        #{apkChangeStartDate},
+        #{apkChangeEndDate},
+        #{apkChangeGameId},
+        #{apkChangeCchId},
+        #{apkChangeMdId},
+        #{apkChangeResultMsg},
+        #{apkChangeOutput},
+        #{apkChangeInput},
+        #{apkChangeFileSource})
+    </insert>
+
+    <!-- 通用功能打包分页查询 -->
+    <select id="findListByPage" resultMap="apkChangeRM">
+        SELECT
+        sql_calc_found_rows
+        <include refid="columnName" />
+        FROM tbl_apk_change AS a
+        INNER JOIN tbl_user AS us
+        ON a.userId = us.userId
+        <if test="game != null and game.gameId != null and game.gameId != ''">
+            AND a.gameId = #{game.gameId}
+        </if>
+        <if test="game != null and game.gameName != null and game.gameName != ''">
+            AND a.gameName = #{game.gameName}
+        </if>
+        <if test="user != null and user.userId != null and user.userId != 0">
+            AND us.userId = #{user.userId}
+        </if>
+        <if test="currentUserGroup != null and currentUserGroup.company != null and currentUserGroup.company.companyId != 0">
+            AND us.userId IN (
+            SELECT tempUs.userId
+            FROM tbl_user AS tempUs, tbl_user_group AS tempGroup
+            WHERE
+            tempGroup.companyId = #{currentUserGroup.company.companyId}
+            AND tempUs.userGroupId = tempGroup.groupId
+            )
+        </if>
+        ORDER BY apkChangeStartDate DESC
+        LIMIT #{pageStart}, #{rows}
+    </select>
+
+    <!-- 分页查询的总数 -->
+    <select id="findCountByPage" resultType="Integer">
+        select found_rows()
+    </select>
+
+</mapper>
